@@ -1,0 +1,4 @@
+fuzzywuzzy
+tidalapi
+re
+requests
