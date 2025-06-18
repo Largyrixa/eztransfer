@@ -1,4 +1,3 @@
-import webbrowser as web
 import tidalapi
 from matcher.deezer import *
 from matcher.tidal import *
@@ -7,11 +6,23 @@ if __name__ == '__main__':
     session = tidalapi.Session()
     login, future = session.login_oauth()
     print('Você será redirecionado à página de login do Tidal para começar.')
-    web.open(login.verification_uri_complete)
+    print("\n-------------------- AÇÃO NECESSÁRIA -----------------------")
+    print("1. Copie o link abaixo.")
+    print("2. Cole no seu navegador para fazer o login no Tidal.")
+    print(f"\nLINK: {login.verification_uri_complete}\n")
+    print("3. Após autorizar no navegador, o programa continuará aqui.")
+    print("------------------------------------------------------------\n")
+    access_token = login.verification_uri
+    while not future.result():
+        continue
+    
+    print("Login no Tidal efetuado com sucesso!")
 
     user_id = input('Informe o seu ID da Deezer: ')
 
     # Dados do usuário do Deezer
+    # user_id = 1097864826 # mensageirodobem
+    user_id = 4873742222 # Calangolango
 
     user = get_deezer_user(user_id=user_id)
     playlists = get_deezer_playlists_user(user_id=user_id)
