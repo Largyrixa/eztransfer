@@ -1,62 +1,51 @@
-from fuzzywuzzy import fuzz
 import tidalapi
-import re
+from rapidfuzz import fuzz
 
-def find_best_match(results:list[tidalapi.Track], original_track:dict):
-    if not results:
+def search_track_tidal(session:tidalapi.Session, og_track:dict):
+    high_score = -1
+    best_match = None
+    og_track['artist'] = og_track['artist'].replace('я', 'r')
+    og_track['title']  = og_track['title'].replace('я', 'r')
+    
+    if og_track['artist'] == 'the smashing pumpkins': og_track['artist'] = 'smashing pumpkins'
+    
+    pesos = {
+        'title'     :45,
+        'artist'    :35,
+        'duration'  :15,
+        'popularity':5
+    }
+    
+    results = session.search(f"{og_track['title']} {og_track['artist']}", models=[tidalapi.Track], limit=10)
+    
+    if not results['tracks']:
         return None
     
-    # Filtrando os resultados pelo nome do artista
-    artist = max(results, key=lambda x:
-        fuzz.partial_ratio(x.artist.name.lower(), original_track['artist'])
-    ).artist.name
-
-    results = [
-        t for t in results
-        if t.artist.name == artist
-    ]
-
-    # Primeiro: procurar por duração exata ou muito próxima
-    exact_duration_matches = [
-        t for t in results
-        if abs(t.duration - original_track['duration']) <= 2.5
-    ]
-
-    if exact_duration_matches:
-        # Entre as de duração correta, pegar a mais popular
-        return max(exact_duration_matches, key=lambda x: x.popularity)
-
-    # Se não encontrar, pegar a mais popular com título similar
-    return max(results, key=lambda x: (
-        fuzz.partial_ratio(x.name.lower(), original_track['title'].lower()) +
-        fuzz.partial_ratio(x.artist.name.lower(), original_track['artist'].lower())
-    ))
-
-def search_track(session, track:dict):
-    formating_table = {
-            '&': 'e',
-            'я': 'r'
-    }
-    track['title'] = track['title'].lower()
-    track['artist'] = track['artist'].lower()
-    for k, v in formating_table.items():
-        track['artist']=track['artist'].replace(k, v)
-        track['title']=track['title'].replace(k, v)
-
-    # Tentativa 1: Busca exata com formatação padrão
-    results = session.search(f'{track['title']}', models=[tidalapi.Track])['tracks']
-    if match := find_best_match(results, track):
-        return match
-
-    # Tentativa 2: Removendo parênteses e tags
-    clean_title = re.sub(r'\([^)]*\)|\[[^\]]*\]', '', track['title']).strip()
-    results = session.search(f"{clean_title}", models=[tidalapi.Track])['tracks']
-    if match := find_best_match(results, track):
-        return match
-    
-    # Tentativa 3: Apenas artista + título principal
-    main_title = track['title'].split('-')[0].strip()
-    results = [t for t in session.search(f"{main_title}", models=[tidalapi.Track])['tracks']
-                if t.artist.name == track['artist']]
-    if match := find_best_match(results, track):
-        return match
+    for track in results['tracks']:
+        track_score = {
+            'id': track.id,
+            'title': fuzz.ratio(og_track['title'], track.name.lower()),
+            'artist': fuzz.ratio(og_track['artist'], track.artist.name.lower()),
+            'duration': 100*(min(og_track['duration'],track.duration) / max(og_track['duration'],track.duration)),
+            'popularity': track.popularity*10
+        }
+        
+        current_score = 0
+        for key, weight in pesos.items():
+            current_score += track_score[key] * weight
+            
+        current_score /= 100
+        
+        if current_score > high_score:
+            high_score = current_score
+            best_match = track_score
+            best_match['total'] = current_score
+        elif current_score == high_score:
+            if best_match and track_score['artist'] > best_match['artist']:
+                best_match = track_score
+                best_match['total'] = high_score
+                
+    if not best_match:
+        return None
+            
+    return best_match['id']

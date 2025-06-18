@@ -17,15 +17,14 @@ def add_tracks_to_tidal_playlist(tracks:list, tidal_playlist_name:str, session:t
     
     print(f'Criando "{tidal_playlist_name}"...')
     for track in tracks:        
-        matched_track = search_track(session, track)
-        if len(achou) >= 100:
-            # Não sei o porquê, mas quando você deixa allow_duplicates=True, ele tem uma taxa de sucesso mais alta
+        matched_track_id = search_track_tidal(session, track)
+        if len(achou) >= 99:
             playlist.add(achou, allow_duplicates=False)
             achou = []
 
-        if matched_track:
+        if matched_track_id:
             try:
-                achou.append(matched_track.id)
+                achou.append(matched_track_id)
             except Exception as e:
                 sleep(1)
                 continue
@@ -35,7 +34,7 @@ def add_tracks_to_tidal_playlist(tracks:list, tidal_playlist_name:str, session:t
         elapsed += 1
         x = round(elapsed/total * 100)
 
-        print(f'[{'#'*(x//4)}{' '*(25-(x//4))}] {x}%', end='\r')
+        print(f"[{'#'*(x//4)}{' '*(25-x//4)}] ({x}%)", end='\r')
     print('\n')
 
     if len(achou) > 0:

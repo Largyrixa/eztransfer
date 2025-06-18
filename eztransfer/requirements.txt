@@ -1,4 +1,4 @@
 fuzzywuzzy
 tidalapi
-re
-requests
+Unidecode
+python-Levenshtein
