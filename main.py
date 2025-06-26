@@ -17,8 +17,7 @@ if __name__ == '__main__':
     user_id = input('Informe o seu ID da Deezer: ')
 
     # Dados do usuário do Deezer
-    # user_id = 1097864826 # mensageirodobem
-    user_id = 4873742222 # Calangolango
+    #user_id = 4873742222 # Calangolango
 
     user = get_deezer_user(user_id=user_id)
     playlists = get_deezer_playlists_user(user_id=user_id)
