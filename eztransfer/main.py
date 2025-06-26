@@ -1,3 +1,4 @@
+import webbrowser as web
 import tidalapi
 from matcher.deezer import *
 from matcher.tidal import *
@@ -6,17 +7,12 @@ if __name__ == '__main__':
     session = tidalapi.Session()
     login, future = session.login_oauth()
     print('Você será redirecionado à página de login do Tidal para começar.')
-    print("\n-------------------- AÇÃO NECESSÁRIA -----------------------")
-    print("1. Copie o link abaixo.")
-    print("2. Cole no seu navegador para fazer o login no Tidal.")
-    print(f"\nLINK: {login.verification_uri_complete}\n")
-    print("3. Após autorizar no navegador, o programa continuará aqui.")
-    print("------------------------------------------------------------\n")
-    access_token = login.verification_uri
+    web.open(login.verification_uri_complete)
+
     while not future.result():
         continue
     
-    print("Login no Tidal efetuado com sucesso!")
+    print("\nLogin concluído!\n")
 
     user_id = input('Informe o seu ID da Deezer: ')
 
@@ -42,5 +38,5 @@ if __name__ == '__main__':
             continue
     
         tracks = get_deezer_playlist_tracks(playlist["id"])
-        tidal_playlist_name = input("Insira o nome da playlist a ser criada no Tidal\n>>>")
+        tidal_playlist_name = playlist['title'] #input("Insira o nome da playlist a ser criada no Tidal\n>>>")
         add_tracks_to_tidal_playlist(tracks, tidal_playlist_name, session)

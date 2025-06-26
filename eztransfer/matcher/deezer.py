@@ -1,7 +1,5 @@
 import requests
 
-__name__ = '__get_deezer__'
-
 def get_deezer_user(user_id:int):
     url = f"https://api.deezer.com/user/{user_id}"
     response = requests.get(url).json()
@@ -35,21 +33,22 @@ def get_deezer_playlist_tracks(playlist_id:int):
     total = response['total']
     elapsed = 0
     x = 0
-    print('Coletando músicas...')
+    print('Procurando músicas...')
 
     while url:
         response = requests.get(url).json()
 
         for track in response['data']:
             tracks.append({
-                'title': track['title_short'].strip().lower(),
-                'artist': track['artist']['name'].strip().lower(),
+                'title': track['title_short'],
+                'artist': track['artist']['name'],
                 'duration': track['duration']
             })
             elapsed += 1
             x = round(elapsed/total * 100)
 
-            print(f"[{'#'*(x//4)}{' '*(25-x//4)}] ({x}%)", end='\r')
+            print(f'[{'#'*(x//4)}{' '*(25-(x//4))}] {x}%', end='\r')
+
 
         url = response.get('next', None)
     print('\n')
