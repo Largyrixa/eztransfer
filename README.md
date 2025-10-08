@@ -6,9 +6,12 @@ Ferramenta para transferir playlists entre serviços de streaming de música de 
 
 ## Funcionalidades Atuais
 
-- [x] Transferência de playlists do Deezer para Tidal
-- [ ] Transferência de playlists do Spotify para Tidal/Deezer (em desenvolvimento)
-- [ ] Transferência de playlists do Tidal para Deezer (em desenvolvimento)
+- [ ] Deezer -> Spotify
+- [x] Deezer -> Tidal
+- [ ] Spotify -> Deezer
+- [ ] Spotify -> Tidal
+- [ ] Tidal -> Deezer
+- [x] Tidal -> Spotify
 
 ## Como Usar
 
