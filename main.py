@@ -1,41 +1,83 @@
-import webbrowser as web
-import tidalapi
-from matcher.deezer import *
-from matcher.tidal import *
+from matcher import deezer, tidal, spotify
 
-if __name__ == '__main__':
-    session = tidalapi.Session()
-    login, future = session.login_oauth()
-    print('Você será redirecionado à página de login do Tidal para começar.')
-    web.open(login.verification_uri_complete)
+logo = \
+"""
+┌─────────────────────────────────────────────────────────────────────────────────────┐
+│ ███████╗███████╗████████╗██████╗  █████╗ ███╗   ██╗███████╗███████╗███████╗██████╗  │
+│ ██╔════╝╚══███╔╝╚══██╔══╝██╔══██╗██╔══██╗████╗  ██║██╔════╝██╔════╝██╔════╝██╔══██╗ │
+│ █████╗    ███╔╝    ██║   ██████╔╝███████║██╔██╗ ██║███████╗█████╗  █████╗  ██████╔╝ │
+│ ██╔══╝   ███╔╝     ██║   ██╔══██╗██╔══██║██║╚██╗██║╚════██║██╔══╝  ██╔══╝  ██╔══██╗ │
+│ ███████╗███████╗   ██║   ██║  ██║██║  ██║██║ ╚████║███████║██║     ███████╗██║  ██║ │
+│ ╚══════╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝  ╚═══╝╚══════╝╚═╝     ╚══════╝╚═╝  ╚═╝ │
+└─────────────────────────────────────────────────────────────────────────────────────┘
+"""
 
-    while not future.result():
-        continue
+
+
+if __name__ == "__main__":
+  print(logo)
+  
+  print(">>> SELECIONE O SERVIÇO DE RETIRADA <<<")
+  print("[1] Deezer")
+  print("[2] Spotify")
+  print("[3] Tidal")
+  print("[q] Sair")
+  retirada = input(">>> ").strip().lower()
+  
+  if retirada == 'q':
+    exit()
+  
+  print("\n>>> SELECIONE O SERVIÇO DE DESTINO <<<")
+  print("[1] Deezer")
+  print("[2] Spotify")
+  print("[3] Tidal")
+  print("[q] Sair")
+  chegada = input(">>> ").strip().lower()
+  
+  if chegada == retirada:
+    print("> Os serviços não podem ser os mesmos!\nSaindo do programa...")
+    exit()
+
+  if chegada == 'q':
+    exit()
     
-    print("\nLogin concluído!\n")
+  match retirada+chegada:
+    #case '12':
+    #
+    
+    case '13':
+      deezer_user   = deezer.get_deezer_user(input("Insira seu ID de usuário da Deezer\n>>> ").strip())
+      tidal_session = tidal.get_session()
+      playlists     = deezer.get_deezer_playlists_user(deezer_user)
+      
+      print("\n>>> ESCOLHA AS PLAYLISTS QUE QUER TRANSFERIR <<<")
+      for playlist in playlists:
+        print(f"> {playlist["name"]} - {len(playlist["tracks"])} músicas? (s/N)")
+        decisao = input(">>> ").lower().strip()
 
-    user_id = input('Informe o seu ID da Deezer: ')
+        if decisao == 's':
+          tidal.transfer_playlist(playlist, tidal_session)
 
-    # Dados do usuário do Deezer
-    #user_id = 4873742222 # Calangolango
-
-    user = get_deezer_user(user_id=user_id)
-    playlists = get_deezer_playlists_user(user_id=user_id)
-
-    print(f'''
-          Você é {user["name"]} - {user["id"]}
-          '''
-          ) # utilizar a user['picture'] somente na implementação web
-    for playlist in playlists:
-        add = input(f'Deseja adicionar a playlist {playlist["title"]} - {playlist["id"]} - {playlist["nb_tracks"]} músicas? (s=sim/N=não/q=sair)\n>>>').lower().strip()
-            #     r = input(f'a playlist achada têm {len(tracks)} músicas, confere? (S/n)\n>>>')
+    #case '21':
+    #
+    #case '23':
+    #
+    #case '31':
+    #
+    case '32':
+      tidal_session   = tidal.get_session()
+      spotify_session = spotify.get_session()
+      
+      playlists = tidal.get_playlists(tidal_session)
+      
+      print("\n>>> ESCOLHA AS PLAYLISTS QUE QUER TRANSFERIR <<<")
+      for i, playlist in enumerate(playlists):
+        print(f"> {playlist["name"]} - {len(playlist["tracks"])} músicas? (s/N)")
+        decisao = input(">>> ").lower().strip()
         
-        if add == 'q':
-            break
-
-        if add != 's':
-            continue
+        if decisao == 's':
+          spotify.transfer_playlist(spotify_session, playlist)
     
-        tracks = get_deezer_playlist_tracks(playlist["id"])
-        tidal_playlist_name = playlist['title'] #input("Insira o nome da playlist a ser criada no Tidal\n>>>")
-        add_tracks_to_tidal_playlist(tracks, tidal_playlist_name, session)
+    case _:
+      print("Ainda em desenvolvimento...")
+
